@@ -1,41 +1,43 @@
 import streamlit as st
 
+from components.charts import render_absorption_chart, render_convergence_charts
+from components.metrics import render_materials_table, render_metrics
+from components.sidebar import render_sidebar
+from config import AVAILABLE_MATERIALS, PAGE_CONFIG
+from services.api_client import run_study
+
+st.session_state.setdefault("dev_token", "xxx")
+st.set_page_config(**PAGE_CONFIG)
 st.logo(image="img/logo-horizontal-light.svg", size="large", icon_image="img/iso-light.svg")
 
-#TODO: Connect materials
-materials = ["Material 1", "Material 2", "Material 3"]
+params = render_sidebar(available_materials=AVAILABLE_MATERIALS)
 
-with st.sidebar:
+if params["run"]:
+    if not params["materials"]:
+        st.sidebar.error("Please select at least one material.")
+    else:
+        with st.spinner("Running optimization study..."):
+            try:
+                st.session_state["last_result"] = run_study(params)
+            except Exception:
+                st.error("Oops! Something crashed on the server, try later!")
 
-    st.subheader("Physics Parameters")
 
-    materials_selection = st.multiselect("Select Material", materials)
+result = st.session_state.get("last_result")
 
-    st.write("Temperature (K)")
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        tempSlider = st.slider("Temperature (K)", min_value=-300, max_value=300, value=0, label_visibility="collapsed")
-    with col2:
-        tempInput = st.number_input("Temperature (K)", min_value=-300, max_value=300, value=0, label_visibility="collapsed")
+st.write("## Optimization Results")
 
-    st.subheader("AI parameters")
+if result is None:
+    st.info("Configure the parameters in the sidebar and click **Run Study** to start.")
+else:
+    render_metrics(result)
 
-    st.write("Population Size")
-    
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        popSizeSlider = st.slider("Population Size", min_value=0, max_value=10000, value=100, step=100, label_visibility="collapsed")
-    with col2:
-        popSizeInput = st.number_input("Population Size", min_value=0, max_value=10000, value=100, step=100, label_visibility="collapsed")
+    col_table, col_chart = st.columns([3, 5])
+    with col_table:
+        render_materials_table(result)
+    with col_chart:
+        render_absorption_chart(result)
 
-    st.write("Generations")
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        genSlider = st.slider("Generations", min_value=0, max_value=1000, value=100, step=10, label_visibility="collapsed")
-    with col2:
-        genInput = st.number_input("Generations", min_value=0, max_value=1000, value=100, step=10, label_visibility="collapsed")
-    st.write("Mutation Rate (%)")
-    mutInput = st.number_input("Mutation Rate (%)", min_value=0.0, max_value=100.0, value=5.0, step=0.1, label_visibility="collapsed")
-
-    run_study_btn = st.button("Run Study")
-
+    st.write("### AI Optimization Details")
+    st.write(f"Generations to convergence: {result['generations_to_convergence']}")
+    render_convergence_charts(result)
