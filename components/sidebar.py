@@ -97,7 +97,7 @@ def render_sidebar(available_materials: list[str]) -> dict:
                     value=1300.0, step=1.0,
                 )
                 params["wavelength_step"] = st.number_input(
-                    "Wavelength Step (nm)", min_value=0.1, max_value=100.0,
+                    "Wavelength Step (nm)", min_value=0.01, max_value=15.0,
                     value=10.0, step=0.1,
                 )
             else:
