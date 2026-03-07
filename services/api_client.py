@@ -56,7 +56,7 @@ def run_study(params: OptimizationRequest) -> OptimizationResponse:
         f"{API_BASE_URL}{API_ENDPOINT}",
         json=payload,
         headers={"Authorization": f"Bearer {st.session_state['dev_token']}"},
-        timeout=60,
+        timeout=300,
     )
 
     if response.status_code == 401:
