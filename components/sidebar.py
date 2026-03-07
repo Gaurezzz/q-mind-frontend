@@ -72,6 +72,8 @@ def render_sidebar(available_materials: list[str]) -> dict:
 
     with st.sidebar:
 
+        params["run"] = st.button("Run Study", use_container_width=True)
+
         with st.expander("General Physics Parameters", expanded=True):
             params["materials"] = [str(m) for m in st.multiselect(
                 "Select Materials", available_materials
@@ -134,7 +136,5 @@ def render_sidebar(available_materials: list[str]) -> dict:
                 "Kappa", min_value=0.0, max_value=1.0,
                 value=0.5, step=0.01, label_visibility="collapsed",
             )
-
-        params["run"] = st.button("Run Study", use_container_width=True)
 
     return params
